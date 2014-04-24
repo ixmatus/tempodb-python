@@ -10,8 +10,7 @@ import datetime
 import re
 import requests
 import simplejson
-import urllib
-import urllib2
+from six.moves.urllib_parse import urlencode, quote
 
 import tempodb
 from tempodb import DataPoint, DataSet, DeleteSummary, Series, Summary
@@ -186,7 +185,7 @@ class Client(object):
             params['tz'] = tz
 
         url = '/series/%s/%s/data/' % (series_type,
-                                       urllib2.quote(series_val, ""))
+                                       quote(series_val, ""))
         json = self.request(url, method='GET', params=params)
 
         # we got an error
@@ -201,20 +200,20 @@ class Client(object):
         }
         params.update(options)
         url = '/series/%s/%s/data/' % (series_type,
-                                       urllib2.quote(series_val, ""))
+                                       quote(series_val, ""))
         json = self.request(url, method='DELETE', params=params)
         return json
 
     def _write(self, series_type, series_val, data):
         url = '/series/%s/%s/data/' % (series_type,
-                                       urllib2.quote(series_val, ""))
+                                       quote(series_val, ""))
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
 
     def _increment(self, series_type, series_val, data):
         url = '/series/%s/%s/increment/' % (series_type,
-                                            urllib2.quote(series_val, ""))
+                                            quote(series_val, ""))
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
@@ -288,7 +287,7 @@ class Client(object):
                 p.append((key, str(value).lower()))
             else:
                 p.append((key, str(value)))
-        return urllib.urlencode(p).encode("UTF-8")
+        return urlencode(p).encode("UTF-8")
 
     def _normalize_params(self, ids=[], keys=[], tags=[], attributes={}):
         params = {}
