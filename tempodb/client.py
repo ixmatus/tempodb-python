@@ -286,8 +286,11 @@ class Client(object):
             elif isinstance(value, bool):
                 p.append((key, str(value).lower()))
             else:
-                p.append((key, str(value)))
-        return urlencode(p).encode("UTF-8")
+                p.append((key, six.b(value)))
+
+        # We shouldn't need the explicit encoding cast at all, but I'm
+        # leaving it in for legacy's sake
+        return urlencode(p) if six.PY3 else urlencode(p).encode("UTF-8")
 
     def _normalize_params(self, ids=[], keys=[], tags=[], attributes={}):
         params = {}

@@ -51,17 +51,23 @@ class ClientTest(TestCase):
     def test_port_defaults(self):
         """ 80 is the default port for HTTP, 443 is the default for HTTPS """
         client = Client('key', 'secret', 'example.com', 80, False)
-        self.assertEqual(client.build_full_url('/etc'), 'http://example.com/v1/etc')
+        self.assertEqual(client.build_full_url('/etc'),
+                         'http://example.com/v1/etc')
         client = Client('key', 'secret', 'example.com', 88, False)
-        self.assertEqual(client.build_full_url('/etc'), 'http://example.com:88/v1/etc')
+        self.assertEqual(client.build_full_url('/etc'),
+                         'http://example.com:88/v1/etc')
         client = Client('key', 'secret', 'example.com', 443, False)
-        self.assertEqual(client.build_full_url('/etc'), 'http://example.com:443/v1/etc')
+        self.assertEqual(client.build_full_url('/etc'),
+                         'http://example.com:443/v1/etc')
         client = Client('key', 'secret', 'example.com', 443, True)
-        self.assertEqual(client.build_full_url('/etc'), 'https://example.com/v1/etc')
+        self.assertEqual(client.build_full_url('/etc'),
+                         'https://example.com/v1/etc')
         client = Client('key', 'secret', 'example.com', 88, True)
-        self.assertEqual(client.build_full_url('/etc'), 'https://example.com:88/v1/etc')
+        self.assertEqual(client.build_full_url('/etc'),
+                         'https://example.com:88/v1/etc')
         client = Client('key', 'secret', 'example.com', 80, True)
-        self.assertEqual(client.build_full_url('/etc'), 'https://example.com:80/v1/etc')
+        self.assertEqual(client.build_full_url('/etc'),
+                         'https://example.com:80/v1/etc')
 
     def test_get_series(self):
         self.client.session.get.return_value = MockResponse(200, """[{
@@ -78,13 +84,16 @@ class ClientTest(TestCase):
             auth=('key', 'secret'),
             headers=self.get_headers
         )
-        expected = [Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1', 'tag2'])]
+        expected = [
+            Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1', 'tag2'])]
         self.assertEqual(series, expected)
 
     def test_delete_series(self):
-        self.client.session.delete.return_value = MockResponse(200, """{"deleted":2}""")
+        self.client.session.delete.return_value = MockResponse(
+            200, """{"deleted":2}""")
 
-        summary = self.client.delete_series([], [], [], {'key': 'one', 'key2': 'two'})
+        summary = self.client.delete_series(
+            [], [], [], {'key': 'one', 'key2': 'two'})
         self.assertEqual(summary.deleted, 2)
 
     def test_create_series(self):
@@ -112,7 +121,8 @@ class ClientTest(TestCase):
 
     def test_update_series(self):
         update = Series('id', 'key', 'name', {'key1': 'value1'}, ['tag1'])
-        self.client.session.put.return_value = MockResponse(200, simplejson.dumps(update.to_json()))
+        self.client.session.put.return_value = MockResponse(
+            200, simplejson.dumps(update.to_json()))
 
         updated = self.client.update_series(update)
 
@@ -143,7 +153,8 @@ class ClientTest(TestCase):
         end = datetime.datetime(2012, 3, 28)
         dataset = self.client.read_id('id', start, end)
 
-        expected = DataSet(Series('id', 'key'), start, end, [DataPoint(start, 12.34)], Summary())
+        expected = DataSet(Series('id', 'key'), start, end,
+                           [DataPoint(start, 12.34)], Summary())
         self.client.session.get.assert_called_once_with(
             'https://example.com/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
@@ -170,7 +181,8 @@ class ClientTest(TestCase):
         end = datetime.datetime(2012, 3, 28)
         dataset = self.client.read_key('key1', start, end)
 
-        expected = DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())
+        expected = DataSet(Series('id', 'key1'), start, end,
+                           [DataPoint(start, 12.34)], Summary())
         self.client.session.get.assert_called_once_with(
             'https://example.com/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
@@ -197,7 +209,8 @@ class ClientTest(TestCase):
         end = datetime.datetime(2012, 3, 28)
         dataset = self.client.read_key('ke:y/1', start, end)
 
-        expected = DataSet(Series('id', 'ke:y/1'), start, end, [DataPoint(start, 12.34)], Summary())
+        expected = DataSet(Series('id', 'ke:y/1'), start,
+                           end, [DataPoint(start, 12.34)], Summary())
         self.client.session.get.assert_called_once_with(
             'https://example.com/v1/series/key/ke%3Ay%2F1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00',
             auth=('key', 'secret'),
@@ -224,7 +237,8 @@ class ClientTest(TestCase):
         end = datetime.datetime(2012, 3, 28)
         datasets = self.client.read(start, end, keys=['key1'])
 
-        expected = [DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())]
+        expected = [
+            DataSet(Series('id', 'key1'), start, end, [DataPoint(start, 12.34)], Summary())]
         self.client.session.get.assert_called_once_with(
             'https://example.com/v1/data/?start=2012-03-27T00%3A00%3A00&end=2012-03-28T00%3A00%3A00&key=key1',
             auth=('key', 'secret'),
@@ -352,10 +366,10 @@ class ClientTest(TestCase):
     def test_write_bulk(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [
-            { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
-            { 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
-            { 'key': 'your-custom-key', 'v': 55.423 },
-            { 'key': 'foo', 'v': 324.991 },
+            {'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164},
+            {'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13},
+            {'key': 'your-custom-key', 'v': 55.423},
+            {'key': 'foo', 'v': 324.991},
         ]
         ts = datetime.datetime(2012, 3, 27)
         result = self.client.write_bulk(ts, data)
@@ -371,10 +385,10 @@ class ClientTest(TestCase):
     def test_increment_bulk(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [
-            { 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4 },
-            { 'id': '38268c3b231f1266a392931e15e99231', 'v': 2 },
-            { 'key': 'your-custom-key', 'v': 1 },
-            { 'key': 'foo', 'v': 1 },
+            {'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4},
+            {'id': '38268c3b231f1266a392931e15e99231', 'v': 2},
+            {'key': 'your-custom-key', 'v': 1},
+            {'key': 'foo', 'v': 1},
         ]
         ts = datetime.datetime(2012, 3, 27)
         result = self.client.increment_bulk(ts, data)
@@ -387,14 +401,16 @@ class ClientTest(TestCase):
         )
         self.assertEqual(result, '')
 
-
     def test_write_multi(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [
-            { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164 },
-            { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 73.13 },
-            { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55.423 },
-            { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324.991 },
+            {'t': datetime.datetime(2013, 8, 21), 'id':
+             '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4.164},
+            {'t': datetime.datetime(2013, 8, 22), 'id':
+             '38268c3b231f1266a392931e15e99231', 'v': 73.13},
+            {'t': datetime.datetime(2013, 8, 23), 'key':
+             'your-custom-key', 'v': 55.423},
+            {'t': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324.991},
         ]
         result = self.client.write_multi(data)
 
@@ -413,11 +429,13 @@ class ClientTest(TestCase):
                 { "status": "200", "messages": [] },
                 { "status": "422", "messages": [ "Must provide a numeric value", "Must provide a series ID or key" ] }
             ]}}"""
-        self.client.session.post.return_value = MockResponse(207, expected_response)
+        self.client.session.post.return_value = MockResponse(
+            207, expected_response)
 
         data = [
-            { 't': datetime.datetime(2013, 8, 21), 'v': 4.164 },
-            { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231'},
+            {'t': datetime.datetime(2013, 8, 21), 'v': 4.164},
+            {'t': datetime.datetime(2013, 8, 22), 'id':
+             '38268c3b231f1266a392931e15e99231'},
             {}
         ]
         result = self.client.write_multi(data)
@@ -434,10 +452,13 @@ class ClientTest(TestCase):
     def test_write_multi(self):
         self.client.session.post.return_value = MockResponse(200, "")
         data = [
-            { 't': datetime.datetime(2013, 8, 21), 'id': '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4164 },
-            { 't': datetime.datetime(2013, 8, 22), 'id': '38268c3b231f1266a392931e15e99231', 'v': 7313 },
-            { 't': datetime.datetime(2013, 8, 23), 'key': 'your-custom-key', 'v': 55423 },
-            { 't': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324991 },
+            {'t': datetime.datetime(2013, 8, 21), 'id':
+             '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v': 4164},
+            {'t': datetime.datetime(2013, 8, 22), 'id':
+             '38268c3b231f1266a392931e15e99231', 'v': 7313},
+            {'t': datetime.datetime(2013, 8, 23), 'key':
+             'your-custom-key', 'v': 55423},
+            {'t': datetime.datetime(2013, 8, 24), 'key': 'foo', 'v': 324991},
         ]
         result = self.client.write_multi(data)
 
