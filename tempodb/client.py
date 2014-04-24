@@ -15,6 +15,7 @@ import urllib2
 
 import tempodb
 from tempodb import DataPoint, DataSet, DeleteSummary, Series, Summary
+import six
 
 
 API_HOST = 'api.tempo-db.com'
@@ -24,7 +25,8 @@ API_VERSION = 'v1'
 VALID_SERIES_KEY = r'^[a-zA-Z0-9\.:;\-_/\\ ]*$'
 RE_VALID_SERIES_KEY = re.compile(VALID_SERIES_KEY)
 
-DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(
+    obj, datetime.datetime) else None
 
 
 class Client(object):
@@ -36,8 +38,10 @@ class Client(object):
         self.port = port
         self.secure = secure
         self.session = requests.session()
-        self.session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
-        self.session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
+        self.session.mount(
+            'http://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
+        self.session.mount(
+            'https://', requests.adapters.HTTPAdapter(pool_connections=pool_connections, pool_maxsize=pool_maxsize))
 
     def get_series(self, ids=[], keys=[], tags=[], attributes={}):
         params = self._normalize_params(ids, keys, tags, attributes)
@@ -53,7 +57,8 @@ class Client(object):
 
     def create_series(self, key=None):
         if key and not RE_VALID_SERIES_KEY.match(key):
-            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+            raise ValueError("Series key must match the following regex: %s" %
+                             (VALID_SERIES_KEY,))
 
         params = {}
         if key is not None:
@@ -64,7 +69,8 @@ class Client(object):
         return series
 
     def update_series(self, series):
-        json = self.request('/series/id/%s/' % (series.id,), method='PUT', params=series.to_json())
+        json = self.request('/series/id/%s/' %
+                            (series.id,), method='PUT', params=series.to_json())
         series = Series.from_json(json)
         return series
 
@@ -120,7 +126,8 @@ class Client(object):
 
     def write_key(self, series_key, data):
         if series_key and not RE_VALID_SERIES_KEY.match(series_key):
-            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+            raise ValueError("Series key must match the following regex: %s" %
+                             (VALID_SERIES_KEY,))
 
         series_type = 'key'
         series_val = series_key
@@ -145,7 +152,8 @@ class Client(object):
 
     def increment_key(self, series_key, data):
         if series_key and not RE_VALID_SERIES_KEY.match(series_key):
-            raise ValueError("Series key must match the following regex: %s" % (VALID_SERIES_KEY,))
+            raise ValueError("Series key must match the following regex: %s" %
+                             (VALID_SERIES_KEY,))
 
         series_type = 'key'
         series_val = series_key
@@ -177,10 +185,11 @@ class Client(object):
         if tz:
             params['tz'] = tz
 
-        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
+        url = '/series/%s/%s/data/' % (series_type,
+                                       urllib2.quote(series_val, ""))
         json = self.request(url, method='GET', params=params)
 
-        #we got an error
+        # we got an error
         if 'error' in json:
             return json
         return DataSet.from_json(json)
@@ -191,24 +200,28 @@ class Client(object):
             'end': end.isoformat(),
         }
         params.update(options)
-        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
+        url = '/series/%s/%s/data/' % (series_type,
+                                       urllib2.quote(series_val, ""))
         json = self.request(url, method='DELETE', params=params)
         return json
 
     def _write(self, series_type, series_val, data):
-        url = '/series/%s/%s/data/' % (series_type, urllib2.quote(series_val, ""))
+        url = '/series/%s/%s/data/' % (series_type,
+                                       urllib2.quote(series_val, ""))
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
 
     def _increment(self, series_type, series_val, data):
-        url = '/series/%s/%s/increment/' % (series_type, urllib2.quote(series_val, ""))
+        url = '/series/%s/%s/increment/' % (series_type,
+                                            urllib2.quote(series_val, ""))
         body = [dp.to_json() for dp in data]
         json = self.request(url, method='POST', params=body)
         return json
 
     def request(self, target, method='GET', params={}):
-        assert method in ['GET', 'POST', 'PUT', 'DELETE'], "Only 'GET', 'POST', 'PUT', 'DELETE' are allowed for method."
+        assert method in ['GET', 'POST', 'PUT',
+                          'DELETE'], "Only 'GET', 'POST', 'PUT', 'DELETE' are allowed for method."
 
         headers = {
             'User-Agent': 'tempodb-python/%s' % (tempodb.get_version(), ),
@@ -219,27 +232,31 @@ class Client(object):
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
             json_data = simplejson.dumps(params, default=DATETIME_HANDLER)
-            response = self.session.post(base, data=json_data, auth=(self.key, self.secret), headers=headers)
+            response = self.session.post(
+                base, data=json_data, auth=(self.key, self.secret), headers=headers)
         elif method == 'PUT':
             headers['Content-Type'] = "application/json"
             base = self.build_full_url(target)
             json_data = simplejson.dumps(params, default=DATETIME_HANDLER)
-            response = self.session.put(base, data=json_data, auth=(self.key, self.secret), headers=headers)
+            response = self.session.put(
+                base, data=json_data, auth=(self.key, self.secret), headers=headers)
         elif method == 'DELETE':
             base = self.build_full_url(target, params)
-            response = self.session.delete(base, auth=(self.key, self.secret), headers=headers)
+            response = self.session.delete(
+                base, auth=(self.key, self.secret), headers=headers)
         else:
             base = self.build_full_url(target, params)
-            response = self.session.get(base, auth=(self.key, self.secret), headers=headers)
+            response = self.session.get(
+                base, auth=(self.key, self.secret), headers=headers)
 
         if response.status_code == 200:
             if response.text:
                 json = simplejson.loads(response.text)
             else:
                 json = ''
-            #try:
+            # try:
             #    json = simplejson.loads(response.text)
-            #except simplejson.decoder.JSONDecodeError, err:
+            # except simplejson.decoder.JSONDecodeError, err:
             #    json = dict(error="JSON Parse Error (%s):\n%s" % (err, response.text))
         else:
             json = dict(error=response.text)
@@ -260,7 +277,7 @@ class Client(object):
 
     def _urlencode(self, params):
         p = []
-        for key, value in params.iteritems():
+        for key, value in six.iteritems(params):
             if isinstance(value, (list, tuple)):
                 for v in value:
                     p.append((key, v))

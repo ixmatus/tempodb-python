@@ -9,7 +9,7 @@ Copyright (c) 2012 TempoDB Inc. All rights reserved.
 
 try:
     VERSION = __import__('pkg_resources').get_distribution('tempodb').version
-except Exception, e:
+except Exception as e:
     VERSION = 'unknown'
 
 def get_version():

@@ -1,6 +1,7 @@
 """
 http://tempo-db.com/api/write-series/#bulk-write-multiple-series
 """
+from __future__ import print_function
 
 import datetime
 from tempodb import Client
@@ -20,4 +21,4 @@ data = [
     { 'key': 'custom-series-key4', 'v': 4.44 },
 ]
 
-print client.write_bulk(ts, data)
+print(client.write_bulk(ts, data))

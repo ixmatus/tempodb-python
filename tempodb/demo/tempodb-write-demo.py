@@ -1,6 +1,7 @@
 """
 http://tempo-db.com/api/write-series/#write-series-by-key
 """
+from __future__ import print_function
 
 import datetime
 import random
@@ -17,7 +18,7 @@ date = datetime.datetime(2012, 1, 1)
 
 for day in range(1, 10):
     # print out the current day we are sending data for
-    print date
+    print(date)
 
     data = []
     # 1440 minutes in one day

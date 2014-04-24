@@ -1,6 +1,7 @@
 """
 http://tempo-db.com/api/read-series/#read-series-by-key
 """
+from __future__ import print_function
 
 import datetime
 from tempodb import Client
@@ -18,4 +19,4 @@ end = start + datetime.timedelta(days=1)
 data = client.read_key(SERIES_KEY, start, end)
 
 for datapoint in data.data:
-    print datapoint
+    print(datapoint)

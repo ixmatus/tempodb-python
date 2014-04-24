@@ -6,13 +6,17 @@ tempodb/setup.py
 Copyright (c) 2012 TempoDB Inc. All rights reserved.
 """
 
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 
 install_requires = [
-    'python-dateutil==1.5',
-    'requests>=1.0',
+    'python-dateutil >= 2.0',
+    'requests >= 2.0',
     'simplejson',
+    'six'
 ]
 
 tests_require = [
