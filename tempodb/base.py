@@ -7,6 +7,7 @@ Copyright (c) 2012 TempoDB, Inc. All rights reserved.
 """
 import six
 from datetime import datetime
+from dateutil.parser import parse
 
 
 class Database(object):
@@ -66,8 +67,7 @@ class DataPoint(object):
 
     @staticmethod
     def from_json(json):
-        matcher = "%Y-%m-%dT%H:%M:%S.%fZ" if six.PY2 else "%Y-%m-%dT%H:%M:%S.%f%z"
-        ts = datetime.strptime(json.get('t', ''), matcher)
+        ts = parse(json.get('t', ''))
         value = json.get('v', None)
         dp = DataPoint(ts, value)
         return dp
