@@ -286,7 +286,7 @@ class Client(object):
             elif isinstance(value, bool):
                 p.append((key, str(value).lower()))
             else:
-                p.append((key, six.b(value)))
+                p.append((key, str(value)))
 
         # We shouldn't need the explicit encoding cast at all, but I'm
         # leaving it in for legacy's sake

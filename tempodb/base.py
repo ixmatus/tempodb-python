@@ -5,6 +5,7 @@ tempodb/client.py
 
 Copyright (c) 2012 TempoDB, Inc. All rights reserved.
 """
+import six
 from datetime import datetime
 
 
@@ -65,7 +66,8 @@ class DataPoint(object):
 
     @staticmethod
     def from_json(json):
-        ts = datetime.strptime(json.get('t', ''), "%Y-%m-%dT%H:%M:%S.%fZ")
+        matcher = "%Y-%m-%dT%H:%M:%S.%fZ" if six.PY2 else "%Y-%m-%dT%H:%M:%S.%f%z"
+        ts = datetime.strptime(json.get('t', ''), matcher)
         value = json.get('v', None)
         dp = DataPoint(ts, value)
         return dp
@@ -90,11 +92,16 @@ class DataSet(object):
     def from_json(json):
         series = Series.from_json(json.get('series', {}))
 
-        start_date = datetime.strptime(json.get('start', ''), "%Y-%m-%dT%H:%M:%S.%fZ")
-        end_date = datetime.strptime(json.get('end', ''), "%Y-%m-%dT%H:%M:%S.%fZ")
+        matcher = "%Y-%m-%dT%H:%M:%S.%fZ" if six.PY2 else "%Y-%m-%dT%H:%M:%S.%f%z"
+
+        start_date = datetime.strptime(
+            json.get('start', ''), matcher)
+        end_date = datetime.strptime(
+            json.get('end', ''), matcher)
 
         data = [DataPoint.from_json(dp) for dp in json.get("data", [])]
-        summary = Summary.from_json(json.get('summary', {})) if 'summary' in json else None
+        summary = Summary.from_json(
+            json.get('summary', {})) if 'summary' in json else None
         return DataSet(series, start_date, end_date, data, summary)
 
 
@@ -112,11 +119,12 @@ class Summary(object):
         summary.__dict__.update(json)
         return summary
 
+
 class DeleteSummary(object):
+
     def __init__(self, deleted):
         self.deleted = deleted
 
     @staticmethod
     def from_json(json):
         return DeleteSummary(json['deleted'])
-
