@@ -94,10 +94,8 @@ class DataSet(object):
 
         matcher = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-        start_date = datetime.strptime(
-            json.get('start', ''), matcher)
-        end_date = datetime.strptime(
-            json.get('end', ''), matcher)
+        start_date = parse(json.get('start', ''))
+        end_date = parse(json.get('end', ''))
 
         data = [DataPoint.from_json(dp) for dp in json.get("data", [])]
         summary = Summary.from_json(
