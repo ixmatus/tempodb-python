@@ -92,7 +92,7 @@ class DataSet(object):
     def from_json(json):
         series = Series.from_json(json.get('series', {}))
 
-        matcher = "%Y-%m-%dT%H:%M:%S.%fZ" if six.PY2 else "%Y-%m-%dT%H:%M:%S.%f%z"
+        matcher = "%Y-%m-%dT%H:%M:%S.%fZ"
 
         start_date = datetime.strptime(
             json.get('start', ''), matcher)
